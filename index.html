@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Multiple Face Swap Video</title>
+<style>
+:root{--bg:#0d0d17;--panel:#1a1a26;--card:#1f1f2d;--line:#32324a;--txt:#fff;--mut:#8b8ba8;--ac:#8b7cf6;--btn:#5a1cff;--badge:#2a1d6e;--glow:rgba(90,28,255,.35);color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f3f1ff;--panel:#fff;--card:#f7f6ff;--line:#cfcaf5;--txt:#14122b;--mut:#5f5c85;--ac:#5a3fe0;--badge:#e2dcff;--glow:rgba(90,28,255,.15);color-scheme:light}}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;min-height:100%}
+main{max-width:640px;margin:0 auto;padding:28px 16px 56px}
+h1{font-size:clamp(2rem,9vw,3.2rem);line-height:1.1;text-align:center;margin:8px 0 12px;font-weight:700}
+.sub{text-align:center;color:var(--mut);font-size:1.1rem;margin:0 0 26px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible,label:focus-within{outline:2px solid var(--ac);outline-offset:2px}
+.tabs{display:flex;background:var(--panel);border-radius:999px;padding:6px;margin-bottom:22px}
+.tabs button{flex:1;padding:12px 6px;border-radius:999px;font-weight:600;color:var(--mut)}
+.tabs button.on{background:#fff;color:#111}
+.panel{background:var(--panel);border-radius:26px;padding:18px;display:grid;gap:16px}
+.card{position:relative;border-radius:24px;padding:18px;background:var(--card);border:1px solid var(--line);text-align:center}
+.card.up{border:2px dashed var(--ac);background:radial-gradient(ellipse at 50% 45%,var(--glow),transparent 70%),var(--card)}
+.num{position:absolute;left:16px;top:16px;width:40px;height:40px;border-radius:50%;background:var(--ac);color:#fff;font-weight:700;display:grid;place-items:center}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:4px;margin:2px 0 22px}
+.seg button{padding:8px 16px;border-radius:999px;font-weight:600;color:var(--mut)}
+.seg button.on{background:var(--ac);color:#fff}
+.big{display:inline-flex;align-items:center;gap:12px;background:var(--btn);color:#fff;font-size:1.4rem;padding:16px 34px;border-radius:20px;box-shadow:0 0 40px var(--glow)}
+.hint{color:var(--mut);margin:16px auto 0;max-width:30ch}
+.ghost{margin-top:12px;color:var(--ac);font-weight:600;padding:8px 12px}
+.stage{position:relative;display:inline-block;max-width:100%;line-height:0;border-radius:14px;overflow:hidden;background:#000}
+.stage video,.stage img.src{display:block;max-width:100%;max-height:60vh;width:auto;height:auto}
+#ov{position:absolute;inset:0;cursor:crosshair;touch-action:none}
+#ov.vid{bottom:46px}
+#boxes{position:absolute;inset:0;pointer-events:none}
+.box{position:absolute;border:2px solid #ffd84a;border-radius:6px;overflow:hidden}
+.box b{position:absolute;left:0;top:0;background:#ffd84a;color:#111;font:700 12px/1 system-ui;padding:3px 5px;z-index:2}
+.box img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.lock{padding:26px 8px;color:var(--mut)}
+.lock svg{display:block;margin:0 auto 8px}
+.lock strong{display:block;color:var(--txt);font-size:1.7rem;font-weight:500}
+#faces{display:grid;gap:10px;text-align:left}
+.face{display:flex;align-items:center;gap:12px;background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:10px}
+.face img.t{width:52px;height:52px;border-radius:12px;object-fit:cover;background:#000}
+.face .n{flex:1;font-weight:600}
+.face .n small{display:block;color:var(--mut);font-weight:400}
+.pill{background:var(--btn);color:#fff;padding:9px 14px;border-radius:12px;font-weight:600;font-size:.9rem;cursor:pointer}
+.x{color:var(--mut);font-size:1.4rem;padding:4px 10px}
+.row{display:flex;align-items:center;gap:10px;text-align:left;margin:10px 0;color:var(--mut)}
+.row input{width:20px;height:20px;accent-color:var(--btn);flex:none}
+.go{width:100%;background:var(--btn);color:#fff;font-weight:700;font-size:1.15rem;padding:16px;border-radius:18px;margin-top:8px}
+#status{margin:14px 0 0;text-align:left;color:var(--mut);font-size:.95rem}
+#status.err{color:#ff8a8a}
+.how{display:grid;gap:14px;margin-top:30px}
+.how h2{font-size:1.5rem;margin:0}
+.step{background:var(--panel);border-radius:24px;padding:22px;position:relative}
+.step i{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:var(--badge);color:var(--ac);font-style:normal;font-weight:700;margin-bottom:10px}
+.step h3{margin:0 0 6px;font-size:1.35rem}
+.step p{margin:0;color:var(--mut);font-size:1.05rem}
+[hidden]{display:none!important}
+.ns{padding-top:66px}
+.pv{display:block;margin:0 auto;max-width:100%;max-height:50vh;border-radius:14px;background:#000}
+.face .t.r{border-radius:50%}
+.sel{background:var(--ac)}
+.off{background:var(--line);color:var(--txt)}
+#result{margin-top:16px}
+#result a{display:inline-block;margin-top:10px;color:var(--ac);font-weight:700}
+#out{display:block;margin:0 auto;max-width:100%;max-height:60vh;border-radius:14px;background:#000}
+.rng{display:flex;align-items:center;gap:10px;margin:8px 0;color:var(--mut);text-align:left}
+.rng span{width:110px;flex:none}.rng input{flex:1;accent-color:var(--btn)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.btns button{padding:10px 16px;border-radius:12px;background:var(--line);font-weight:600}
+.rng select{flex:1;padding:10px;border-radius:12px;background:var(--bg);color:var(--txt);border:1px solid var(--line);font:inherit}
+</style>
+<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><meta name="theme-color" content="#0d0d17"></head>
+<body>
+<main>
+  <h1>Multiple Face Swap</h1>
+  <p class="sub">Runs on your device. Nothing is uploaded. Works offline after the first visit.</p>
+  <nav class="tabs" id="tabs" aria-label="Swap type">
+    <button data-m="photo" class="on">Photo Swap</button>
+    <button data-m="video">Video Swap</button>
+  </nav>
+  <section class="panel">
+    <div class="card up ns">
+      <span class="num">1</span>
+      <div id="drop">
+        <button class="big" id="pick"><span id="pickLbl">Upload photo</span></button>
+        <p class="hint" id="hint">Upload a photo with one or more faces. Each face is detected automatically.</p>
+      </div>
+      <div id="stage" hidden>
+        <canvas id="out"></canvas>
+        <div id="vc" class="rng" hidden><button class="pill" id="play">Play</button><input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Position"></div>
+        <div class="btns"><button id="cmp">Hold to compare</button><button id="det" hidden>Detect faces here</button><button id="chg">Choose another file</button></div>
+      </div>
+      <input type="file" id="file" hidden accept="image/*">
+    </div>
+    <div class="card">
+      <span class="num">2</span>
+      <div class="seg" id="multseg"><button data-s="single">Single</button><button class="on" data-s="multi">Multiple</button></div>
+      <div class="lock" id="lock"><strong>Locked</strong><span id="lockTxt">Upload a photo to begin detecting faces</span></div>
+      <div id="faces" hidden></div>
+    </div>
+    <div class="card ns">
+      <span class="num">3</span>
+      <label class="rng"><span>Edge softness</span><input type="range" id="soft" min="0" max="100" value="35"></label>
+      <label class="rng"><span>Colour match</span><input type="range" id="col" min="0" max="100" value="80"></label>
+      <label class="rng"><span>Max head turn</span><input type="range" id="turn" min="30" max="90" value="75"></label>
+      <label class="rng"><span>Face area</span><input type="range" id="cov" min="85" max="110" value="98"></label>
+      <label class="rng"><span>Glasses</span><select id="kg"><option value="auto">Auto detect</option><option value="keep">Keep original</option><option value="off">Use replacement's</option></select></label>
+      <label class="row"><input type="checkbox" id="km"> Keep the original mouth (best lip sync)</label>
+      <div class="btns"><button id="pNat">Natural blend</button><button id="pDir">Direct swap</button></div>
+      <label class="row"><input type="checkbox" id="consent"> I have permission from every person whose face is swapped.</label>
+      <button class="go" id="save">Save result</button>
+      <p id="status" role="status"></p>
+    </div>
+  </section>
+  <section class="how">
+    <h2>How it works</h2>
+    <div class="step"><i>1</i><h3>Upload</h3><p>Pick a photo or video. Faces are found on your device.</p></div>
+    <div class="step"><i>2</i><h3>Choose faces</h3><p>Select faces and add a replacement photo for each, or swap two faces with each other.</p></div>
+    <div class="step"><i>3</i><h3>Preview and save</h3><p>The replacement is reshaped to fit each face. Adjust, compare, then save.</p></div>
+  </section>
+</main>
+<script type="module">
+let FaceLandmarker,FilesetResolver;
+const $=s=>document.querySelector(s);
+const msg=(t,e)=>{const s=$('#status');s.textContent=t;s.className=e?'err':''};
+const S={mode:'photo',multi:true,faces:[],V:null,T0:null,B0:null,W:0,H:0,orig:false,ts:0};
+const C=$('#out'),X=C.getContext('2d',{willReadFrequently:true});
+let FLi,FLv,TRI,FS,IDX={};
+const mkc=(w,h)=>{const c=document.createElement('canvas');c.width=Math.max(1,w|0);c.height=Math.max(1,h|0);return c};
+const fit=(i,m)=>{const k=Math.min(1,m/Math.max(i.width,i.height)),c=mkc(i.width*k,i.height*k);c.getContext('2d').drawImage(i,0,0,c.width,c.height);return c};
+const bb=p=>{let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;for(const q of p){x0=Math.min(x0,q.x);y0=Math.min(y0,q.y);x1=Math.max(x1,q.x);y1=Math.max(y1,q.y)}return{x0,y0,x1,y1,w:x1-x0,h:y1-y0}};
+const cen=p=>{const b=bb(p);return{x:(b.x0+b.x1)/2,y:(b.y0+b.y1)/2}};
+const thumb=(c,p)=>{const b=bb(p),s=Math.max(b.w,b.h)*1.2,t=mkc(96,96),m=cen(p);t.getContext('2d').drawImage(c,m.x-s/2,m.y-s/2,s,s,0,0,96,96);return t.toDataURL('image/jpeg',.8)};
+const dl=(b,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5e3)};
+const raf=cb=>S.V&&S.V.requestVideoFrameCallback?S.V.requestVideoFrameCallback(cb):requestAnimationFrame(cb);
+
+/* ---------- engine: on-device landmarks (468 points per face) ---------- */
+const CDN='https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
+const MODEL='https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task';
+let BASE=CDN,MP=MODEL;
+const MK=async m=>{
+  const o=d=>({baseOptions:{modelAssetPath:MP,delegate:d},runningMode:m,numFaces:10,minFaceDetectionConfidence:.3,minFacePresenceConfidence:.3,minTrackingConfidence:.3});
+  try{return await FaceLandmarker.createFromOptions(FS,o('GPU'))}catch(e){return await FaceLandmarker.createFromOptions(FS,o('CPU'))}
+};
+let booting;
+const engine=()=>booting??=(async()=>{
+  msg('Loading the face model (first time only)…');
+  try{
+    try{({FaceLandmarker,FilesetResolver}=await import('./vendor/vision_bundle.mjs'));BASE='./vendor';MP='./vendor/face_landmarker.task'}
+    catch(e){({FaceLandmarker,FilesetResolver}=await import(CDN+'/vision_bundle.mjs'))}
+    FS=await FilesetResolver.forVisionTasks(BASE+'/wasm');FLi=await MK('IMAGE');
+  }catch(e){booting=null;throw new Error('Could not load the face model. Connect to the internet once, then reload.')}
+  const adj={};
+  FaceLandmarker.FACE_LANDMARKS_TESSELATION.forEach(({start:a,end:b})=>{(adj[a]??=new Set).add(b);(adj[b]??=new Set).add(a)});
+  TRI=[];for(const a in adj)for(const b of adj[a])if(b>+a)for(const c of adj[b])if(c>b&&adj[a].has(c))TRI.push([+a,b,c]);
+  const ix=c=>[...new Set((c||[]).flatMap(({start:a,end:b})=>[a,b]))],F=FaceLandmarker;
+  IDX={eyes:[...ix(F.FACE_LANDMARKS_LEFT_EYE),...ix(F.FACE_LANDMARKS_LEFT_EYEBROW),...ix(F.FACE_LANDMARKS_RIGHT_EYE),...ix(F.FACE_LANDMARKS_RIGHT_EYEBROW)],lips:ix(F.FACE_LANDMARKS_LIPS)};
+  msg('');
+})();
+const pts=(r,W,H)=>r.faceLandmarks.map(f=>f.map(p=>({x:p.x*W,y:p.y*H,z:p.z*W})));
+const detImg=c=>pts(FLi.detect(c),c.width,c.height);
+const detVid=()=>{S.ts=Math.max(S.ts+1,performance.now());return pts(FLv.detectForVideo(S.V,S.ts),S.W,S.H)};
+
+/* ---------- reshaping: warp the replacement mesh onto the target mesh ---------- */
+function hull(P){
+  const p=[...P].sort((a,b)=>a.x-b.x||a.y-b.y),cr=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x),h=[];
+  for(const q of p){while(h.length>1&&cr(h.at(-2),h.at(-1),q)<=0)h.pop();h.push(q)}
+  const n=h.length+1;
+  for(let i=p.length-2;i>=0;i--){const q=p[i];while(h.length>=n&&cr(h.at(-2),h.at(-1),q)<=0)h.pop();h.push(q)}
+  h.pop();return h;
+}
+function warp(c,img,s0,s1,s2,d0,d1,d2){
+  const ux=s1.x-s0.x,uy=s1.y-s0.y,wx=s2.x-s0.x,wy=s2.y-s0.y,det=ux*wy-wx*uy;if(!det)return;
+  const vx=d1.x-d0.x,vy=d1.y-d0.y,zx=d2.x-d0.x,zy=d2.y-d0.y;
+  const a=(vx*wy-zx*uy)/det,k=(zx*ux-vx*wx)/det,b=(vy*wy-zy*uy)/det,d=(zy*ux-vy*wx)/det;
+  const gx=(d0.x+d1.x+d2.x)/3,gy=(d0.y+d1.y+d2.y)/3,e=p=>[gx+(p.x-gx)*1.06,gy+(p.y-gy)*1.06];
+  c.save();c.beginPath();c.moveTo(...e(d0));c.lineTo(...e(d1));c.lineTo(...e(d2));c.closePath();c.clip();
+  c.setTransform(a,b,k,d,d0.x-a*s0.x-k*s0.y,d0.y-b*s0.x-d*s0.y);c.drawImage(img,0,0);c.restore();
+}
+const blur=(c,k)=>{ // soft blur by shrinking then enlarging (works in every browser)
+  k=Math.round(k);if(k<2)return c;
+  const s=mkc(c.width/k,c.height/k),sc=s.getContext('2d');sc.imageSmoothingQuality='high';sc.drawImage(c,0,0,s.width,s.height);
+  const o=mkc(c.width,c.height),oc=o.getContext('2d');oc.imageSmoothingQuality='high';oc.drawImage(s,0,0,c.width,c.height);return o};
+/* analysis helpers: how far the head is turned, how big the face is */
+const turnS=p=>{const l=p[234],r=p[454],n=p[1],ux=r.x-l.x,uy=r.y-l.y;return 2*(((n.x-l.x)*ux+(n.y-l.y)*uy)/((ux*ux+uy*uy)||1))-1};
+const turnR=p=>Math.abs(turnS(p));
+const turnFade=(p,deg)=>{const rm=Math.tan(deg*Math.PI/180);return Math.max(0,Math.min(1,(rm-turnR(p))/(rm*.25)))};
+const info=p=>{const w=Math.round(bb(p).w),d=Math.round(Math.atan(turnR(p))*180/Math.PI);return w+'px · turn '+d+'°'+(w<90?' · small':'')+(d>+$('#turn').value?' · too turned, original kept':'')};
+function swapFace(base,f,tg,o,fade){
+  fade*=turnFade(tg,o.turn);if(fade<=.01)return;
+  const src=f.src,b=bb(tg),pad=b.w*.2,bx=Math.max(0,Math.floor(b.x0-pad)),by=Math.max(0,Math.floor(b.y0-pad));
+  const bw=Math.min(S.W,Math.ceil(b.x1+pad))-bx,bh=Math.min(S.H,Math.ceil(b.y1+pad))-by;
+  if(bw<8||bh<8)return;
+  const t=tg.map(p=>({x:p.x-bx,y:p.y-by,z:p.z})),L=mkc(bw,bh),lc=L.getContext('2d',{willReadFrequently:true});
+  const area=(p,q,r)=>(q.x-p.x)*(r.y-p.y)-(r.x-p.x)*(q.y-p.y),zs=v=>t[v[0]].z+t[v[1]].z+t[v[2]].z;
+  const draw=(s,w)=>{
+    lc.globalAlpha=w;
+    TRI.filter(v=>area(s.pts[v[0]],s.pts[v[1]],s.pts[v[2]])*area(t[v[0]],t[v[1]],t[v[2]])>0).sort((u,v)=>zs(v)-zs(u))
+      .forEach(([a,c,d])=>warp(lc,s.canvas,s.pts[a],s.pts[c],s.pts[d],t[a],t[c],t[d]));
+    lc.globalAlpha=1;
+  };
+  draw(src,1);
+  if(f.side){
+    const ts=turnS(tg),w=Math.max(0,Math.min(1,(Math.abs(ts)-.25)/.3));
+    if(w>0){const sd=[f.side,f.sideF].find(x=>x&&Math.sign(turnS(x.pts))===Math.sign(ts));if(sd)draw(sd,w)}
+  }
+  const B=mkc(bw,bh),bc=B.getContext('2d',{willReadFrequently:true});bc.drawImage(base,bx,by,bw,bh,0,0,bw,bh);
+  // are the target's eyes behind dark lenses? (auto glasses detection, smoothed over frames)
+  const lum=(x,y)=>{const r=Math.max(2,b.w*.05),w=Math.max(1,Math.min(bw,2*r|0)),h=Math.max(1,Math.min(bh,2*r|0));
+    const d=bc.getImageData(Math.min(Math.max(0,Math.round(x-r)),bw-w),Math.min(Math.max(0,Math.round(y-r)),bh-h),w,h).data;
+    let s=0;for(let i=0;i<d.length;i+=4)s+=d[i]*.3+d[i+1]*.59+d[i+2]*.11;return s/(d.length/4)};
+  const ec=(a,c,d,e)=>lum((t[a].x+t[c].x+t[d].x+t[e].x)/4,(t[a].y+t[c].y+t[d].y+t[e].y)/4);
+  const skin=(lum(t[50].x,t[50].y)+lum(t[280].x,t[280].y)+lum(t[151].x,t[151].y))/3||1;
+  const ratio=(ec(33,133,159,145)+ec(263,362,386,374))/2/skin;
+  f.dk=f.dk==null?ratio:f.dk*.8+ratio*.2;
+  const keepEyes=o.glasses==='keep'||(o.glasses==='auto'&&f.dk<.5);
+  const M=mkc(bw,bh),mc=M.getContext('2d',{willReadFrequently:true}),hl=hull(t);
+  const cx=hl.reduce((s,p)=>s+p.x,0)/hl.length,cy=hl.reduce((s,p)=>s+p.y,0)/hl.length;
+  mc.fillStyle='#fff';mc.beginPath();
+  hl.forEach((p,i)=>{const x=cx+(p.x-cx)*o.cov,y=cy+(p.y-cy)*o.cov;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.fill();
+  mc.globalCompositeOperation='destination-out';
+  const hole=(ids,fx,fy)=>{
+    const h=hull(ids.map(i=>t[i])),gx=h.reduce((s,p)=>s+p.x,0)/h.length,gy=h.reduce((s,p)=>s+p.y,0)/h.length;
+    mc.beginPath();h.forEach((p,i)=>{const x=gx+(p.x-gx)*fx,y=gy+(p.y-gy)*fy;i?mc.lineTo(x,y):mc.moveTo(x,y)});mc.fill();
+  };
+  if(keepEyes&&IDX.eyes?.length)hole(IDX.eyes,1.3,1.6);
+  if(o.mouth&&IDX.lips?.length)hole(IDX.lips,1.15,1.25);
+  mc.globalCompositeOperation='source-over';
+  if(o.color>0){ // match skin tone and contrast, ignoring beard, hair and highlights
+    const dB=bc.getImageData(0,0,bw,bh).data,li=lc.getImageData(0,0,bw,bh),dL=li.data,dM=mc.getImageData(0,0,bw,bh).data;
+    const px=[];for(let i=0;i<dL.length;i+=8)if(dM[i+3]>200&&dL[i+3]>250)px.push(i);
+    if(px.length>60){
+      const ly=(d,i)=>d[i]*.3+d[i+1]*.59+d[i+2]*.11;
+      const keep=(d,lo,hi)=>{const v=Float32Array.from(px,i=>ly(d,i)).sort(),a=v[Math.floor(v.length*lo)],z=v[Math.floor(v.length*hi)];return px.filter(i=>{const y=ly(d,i);return y>=a&&y<=z})};
+      const st=(d,P)=>{const m=[0,0,0],q=[0,0,0],n=P.length||1;for(const i of P)for(let k=0;k<3;k++){m[k]+=d[i+k];q[k]+=d[i+k]**2}return m.map((v,k)=>{const u=v/n;return[u,Math.sqrt(Math.max(1,q[k]/n-u*u))]})};
+      const sb=st(dB,keep(dB,.25,.92)),sl=st(dL,keep(dL,.1,.92));
+      const cur=sb.map((v,k)=>[v[0],sl[k][0],Math.min(1.25,Math.max(.8,v[1]/sl[k][1]))]);
+      f.cs=f.cs?cur.map((c,k)=>c.map((x,j)=>f.cs[k][j]*.65+x*.35)):cur;
+      const g=o.color/100,C0=f.cs;
+      for(let i=0;i<dL.length;i+=4)if(dL[i+3])for(let k=0;k<3;k++){const v=(dL[i+k]-C0[k][1])*C0[k][2]+C0[k][0];dL[i+k]+=(v-dL[i+k])*g}
+      lc.putImageData(li,0,0);
+    }
+  }
+  lc.globalCompositeOperation='destination-in';lc.drawImage(blur(M,o.soft/100*b.w*.14),0,0);
+  X.globalAlpha=fade;X.drawImage(L,bx,by);X.globalAlpha=1;
+}
+
+/* ---------- preview ---------- */
+function track(){
+  const det=detVid(),used=new Set();
+  S.faces.forEach(f=>{
+    if(!f.on||!f.src){f.cur=null;return}
+    let best=-1,bd=1e9;
+    det.forEach((p,i)=>{if(used.has(i))return;const c=cen(p),d=Math.hypot(c.x-f.c.x,c.y-f.c.y);if(d<bd){bd=d;best=i}});
+    if(best>=0&&bd<S.W*.25){
+      used.add(best);const p=det[best],q=f.cur;
+      f.cur=q&&q.length===p.length?p.map((n,i)=>({x:q[i].x+(n.x-q[i].x)*.6,y:q[i].y+(n.y-q[i].y)*.6,z:q[i].z+(n.z-q[i].z)*.6})):p;
+      f.c=cen(f.cur);f.miss=0;
+    }else f.miss=(f.miss||0)+1;
+  });
+}
+function paint(){
+  if(!S.T0&&!S.V)return;
+  const vid=S.mode==='video';
+  if(vid)S.B0.getContext('2d').drawImage(S.V,0,0,S.W,S.H);
+  const base=vid?S.B0:S.T0;
+  X.drawImage(base,0,0);
+  if(S.orig||!S.faces.some(f=>f.on&&f.src))return;
+  if(vid)track();
+  const o={soft:+$('#soft').value,color:+$('#col').value,glasses:$('#kg').value,mouth:$('#km').checked,turn:+$('#turn').value,cov:+$('#cov').value/100};
+  S.faces.forEach(f=>{
+    const p=vid?f.cur:f.pts,m=f.miss||0,fade=vid?(m<=12?1:Math.max(0,1-(m-12)/8)):1;
+    if(f.on&&f.src&&p&&fade>0)swapFace(base,f,p,o,fade);
+  });
+}
+function loop(){paint();if(S.V&&!S.V.paused&&!S.V.ended)raf(loop)}
+
+/* ---------- faces list ---------- */
+function renderFaces(){
+  const box=$('#faces');box.innerHTML='';
+  if(S.mode==='photo'&&S.faces.length>1){
+    const a=document.createElement('button');a.className='ghost';a.textContent='Swap two faces with each other';
+    a.onclick=()=>{const [f0,f1]=S.faces.filter(f=>f.on).length>1?S.faces.filter(f=>f.on):S.faces;
+      f0.on=f1.on=true;f0.src={canvas:S.T0,pts:f1.pts};f1.src={canvas:S.T0,pts:f0.pts};f0.rep=f1.thumb;f1.rep=f0.thumb;renderFaces();paint()};
+    box.appendChild(a);
+  }
+  S.faces.forEach((f,i)=>{
+    const d=document.createElement('div');d.className='face';d.style.flexWrap='wrap';
+    d.innerHTML=`<img class="t" alt="Detected face ${i+1}" src="${f.thumb}"><div class="n">Face ${i+1}<small>${!f.on?'Not selected':f.src?'Replacement ready':'Needs a replacement'} · ${info(f.pts)}</small></div>`;
+    const t=document.createElement('button');t.className='pill '+(f.on?'sel':'off');t.textContent=f.on?'Selected':'Select';
+    t.onclick=()=>{if(!S.multi&&!f.on)S.faces.forEach(x=>x.on=false);f.on=!f.on;renderFaces();paint()};
+    d.appendChild(t);
+    if(f.on){
+      if(f.rep){const r=document.createElement('img');r.className='t r';r.alt='Replacement';r.src=f.rep;d.appendChild(r)}
+      const lab=document.createElement('label');lab.className='pill';lab.textContent=f.src?'Change':'Upload replacement';
+      const inp=document.createElement('input');inp.type='file';inp.accept='image/*';inp.hidden=true;
+      inp.onchange=()=>inp.files[0]&&setRep(f,inp.files[0]);lab.appendChild(inp);d.appendChild(lab);
+      if(f.src){
+        const sl=document.createElement('label');sl.className='pill off';sl.textContent=f.side?'Change side photo':'Add side photo';
+        const si=document.createElement('input');si.type='file';si.accept='image/*';si.hidden=true;
+        si.onchange=()=>si.files[0]&&setRep(f,si.files[0],true);sl.appendChild(si);d.appendChild(sl);
+      }
+    }
+    box.appendChild(d);
+  });
+  if(!S.faces.length)box.innerHTML='<p class="hint">No faces found. Try a clearer, front-facing '+(S.mode==='video'?'frame.':'photo.')+'</p>';
+}
+async function setRep(f,file,side){
+  try{
+    await engine();
+    const c=fit(await createImageBitmap(file),1024),list=detImg(c);
+    if(!list.length)return msg('No face found in that image. Use a clear, front-facing photo.',true);
+    const p=list.sort((a,b)=>bb(b).w-bb(a).w)[0];
+    if(side){ // keep the photo and a mirrored copy, so either turn direction works
+      const fc=mkc(c.width,c.height),fx=fc.getContext('2d');fx.translate(c.width,0);fx.scale(-1,1);fx.drawImage(c,0,0);
+      const l2=detImg(fc);f.side={canvas:c,pts:p};f.sideF=l2.length?{canvas:fc,pts:l2.sort((a,b)=>bb(b).w-bb(a).w)[0]}:null;
+      renderFaces();paint();return msg(turnR(p)<.25?'That photo looks front-facing. Use one turned about 45 to 60 degrees.':'');
+    }
+    f.src={canvas:c,pts:p};f.cs=null;f.dk=null;f.rep=thumb(c,p);renderFaces();paint();const q=bb(p);msg((q.w<120?'The replacement face is small. A larger photo looks better. ':'')+(turnR(p)>.35?'The replacement is turned. Use a front-facing photo.':''));
+  }catch(e){msg(e.message,true)}
+}
+function setFaces(list,src){
+  S.faces=list.map(p=>({pts:p,c:cen(p),on:false,src:null,rep:null,cur:null,thumb:thumb(src,p)}));
+  $('#lock').hidden=true;$('#faces').hidden=false;renderFaces();paint();
+}
+
+/* ---------- loading ---------- */
+function reset(){
+  if(S.V){S.V.pause();URL.revokeObjectURL(S.V.src)}
+  Object.assign(S,{faces:[],V:null,T0:null,B0:null});
+  $('#stage').hidden=true;$('#drop').hidden=false;$('#lock').hidden=false;$('#faces').hidden=true;msg('');
+}
+function setMode(m){
+  S.mode=m;reset();
+  document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+  const w=m==='video'?'video':'photo';
+  $('#file').accept=m==='video'?'video/*':'image/*';$('#pickLbl').textContent='Upload '+w;
+  $('#hint').textContent='Upload a '+w+' with one or more faces. Each face is detected automatically.';
+  $('#lockTxt').textContent='Upload a '+w+' to begin detecting faces';
+  $('#vc').hidden=$('#det').hidden=m!=='video';$('#km').checked=m==='video';$('#save').textContent=m==='video'?'Render and save video':'Save result';
+}
+async function load(file){
+  if(!file)return;
+  try{
+    await engine();reset();
+    $('#lockTxt').textContent='Detecting faces…';
+    if(S.mode==='photo'){
+      S.T0=fit(await createImageBitmap(file),2048);S.W=S.T0.width;S.H=S.T0.height;
+      C.width=S.W;C.height=S.H;$('#drop').hidden=true;$('#stage').hidden=false;
+      setFaces(detImg(S.T0),S.T0);
+    }else{
+      const v=document.createElement('video');v.src=URL.createObjectURL(file);v.playsInline=true;v.muted=true;v.preload='auto';
+      await new Promise((r,j)=>{v.onloadeddata=r;v.onerror=()=>j(new Error('That video could not be read.'))});
+      const k=Math.min(1,1280/Math.max(v.videoWidth,v.videoHeight));
+      S.W=Math.round(v.videoWidth*k/2)*2;S.H=Math.round(v.videoHeight*k/2)*2;S.V=v;S.file=file;S.B0=mkc(S.W,S.H);
+      C.width=S.W;C.height=S.H;FLv??=await MK('VIDEO');
+      v.onseeked=()=>{S.faces.forEach(f=>{f.cur=null;f.miss=0});if(v.paused)paint()};
+      v.ontimeupdate=()=>{$('#scrub').value=v.currentTime/v.duration*1000};
+      v.onplay=()=>{$('#play').textContent='Pause'};v.onpause=v.onended=()=>{$('#play').textContent='Play'};
+      v.currentTime=Math.min(.3,v.duration/2);await new Promise(r=>{const f=v.onseeked;v.onseeked=()=>{v.onseeked=f;r()}});
+      $('#drop').hidden=true;$('#stage').hidden=false;detectHere();
+    }
+  }catch(e){msg(e.message,true);$('#lockTxt').textContent='Upload a file to begin detecting faces'}
+}
+function detectHere(){
+  const v=S.V;v.pause();S.B0.getContext('2d').drawImage(v,0,0,S.W,S.H);
+  setFaces(detVid(),S.B0);
+}
+
+/* ---------- saving ---------- */
+const synced=v=>new Promise(r=>{const f=v.onseeked;v.onseeked=()=>{v.onseeked=f;r()}});
+async function save(){
+  if(!$('#consent').checked)return msg('Confirm you have permission from everyone whose face is swapped.',true);
+  if(!S.faces.some(f=>f.on&&f.src))return msg('Select a face and add its replacement first.',true);
+  if(S.mode==='photo'){S.orig=false;paint();return C.toBlob(b=>dl(b,'face-swap.png'),'image/png')}
+  $('#save').disabled=true;
+  try{
+    if(window.VideoEncoder&&window.AudioEncoder)await exportMp4();else await exportRec();
+  }catch(e){
+    console.warn(e);msg('Switching to the basic exporter…');
+    try{await exportRec()}catch(e2){msg(e2.message,true)}
+  }
+  S.V.playbackRate=1;$('#save').disabled=false;
+}
+async function exportMp4(){
+  const v=S.V;v.pause();v.muted=true;let err;
+  const {Muxer,ArrayBufferTarget}=await import('./vendor/mp4-muxer.mjs').catch(()=>import('https://cdn.jsdelivr.net/npm/mp4-muxer@5/build/mp4-muxer.mjs'));
+  let ab=null,acfg=null;
+  try{
+    const ctx=new AudioContext();ab=await ctx.decodeAudioData(await S.file.arrayBuffer());ctx.close();
+    for(const codec of ['mp4a.40.2','opus']){
+      const c={codec,sampleRate:ab.sampleRate,numberOfChannels:Math.min(2,ab.numberOfChannels),bitrate:128000};
+      if((await AudioEncoder.isConfigSupported(c)).supported){acfg=c;break}
+    }
+  }catch(e){ab=null}
+  if(!acfg)ab=null;
+  const vcfg={codec:'avc1.4d0028',width:S.W,height:S.H,bitrate:6e6,framerate:30};
+  if(!(await VideoEncoder.isConfigSupported(vcfg)).supported)throw new Error('H.264 not supported');
+  const muxer=new Muxer({target:new ArrayBufferTarget(),video:{codec:'avc',width:S.W,height:S.H},
+    ...(ab?{audio:{codec:acfg.codec==='opus'?'opus':'aac',sampleRate:acfg.sampleRate,numberOfChannels:acfg.numberOfChannels}}:{}),fastStart:'in-memory'});
+  const ve=new VideoEncoder({output:(c,m)=>muxer.addVideoChunk(c,m),error:e=>err=e});ve.configure(vcfg);
+  v.currentTime=0;await synced(v);S.faces.forEach(f=>{f.cur=null;f.miss=0});
+  v.playbackRate=.4;let n=0; // slow playback so every frame is processed, timestamps stay exact
+  await new Promise(res=>{
+    const step=(t,m)=>{
+      paint();const fr=new VideoFrame(C,{timestamp:Math.round(m.mediaTime*1e6)});
+      ve.encode(fr,{keyFrame:n++%60===0});fr.close();
+      msg('Rendering… '+Math.round(m.mediaTime/v.duration*100)+'%');
+      if(!v.ended)v.requestVideoFrameCallback(step);
+    };
+    v.addEventListener('ended',res,{once:true});v.requestVideoFrameCallback(step);v.play();
+  });
+  await ve.flush();
+  if(ab){
+    const ae=new AudioEncoder({output:(c,m)=>muxer.addAudioChunk(c,m),error:e=>err=e});ae.configure(acfg);
+    const ch=acfg.numberOfChannels,sr=ab.sampleRate,pl=[...Array(ch).keys()].map(i=>ab.getChannelData(i));
+    for(let o=0;o<ab.length;o+=sr){
+      const k=Math.min(sr,ab.length-o),d=new Float32Array(k*ch);pl.forEach((p,i)=>d.set(p.subarray(o,o+k),i*k));
+      ae.encode(new AudioData({format:'f32-planar',sampleRate:sr,numberOfFrames:k,numberOfChannels:ch,timestamp:Math.round(o/sr*1e6),data:d}));
+    }
+    await ae.flush();
+  }
+  if(err)throw err;
+  muxer.finalize();dl(new Blob([muxer.target.buffer],{type:'video/mp4'}),'face-swap.mp4');
+  msg(ab?'Saved MP4 with the original audio.':'Saved MP4. No audio track could be read from this file.');
+}
+async function exportRec(){
+  const v=S.V;v.pause();v.currentTime=0;await synced(v);S.faces.forEach(f=>{f.cur=null;f.miss=0});
+  const cs=C.captureStream(30);
+  try{
+    if(!S.ad){S.ac=new AudioContext();S.ad=S.ac.createMediaStreamDestination();const sr=S.ac.createMediaElementSource(v);sr.connect(S.ad);sr.connect(S.ac.destination)}
+    await S.ac.resume();S.ad.stream.getAudioTracks().forEach(t=>cs.addTrack(t));
+  }catch(e){}
+  v.muted=false;
+  const mime=['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm','video/mp4'].find(m=>MediaRecorder.isTypeSupported(m));
+  const mr=new MediaRecorder(cs,{mimeType:mime,videoBitsPerSecond:6e6}),ch=[];
+  mr.ondataavailable=e=>ch.push(e.data);
+  await new Promise(res=>{
+    mr.onstop=()=>{dl(new Blob(ch,{type:mime}),'face-swap.'+(mime.includes('mp4')?'mp4':'webm'));msg('Saved.');res()};
+    v.addEventListener('ended',()=>mr.stop(),{once:true});
+    mr.start();v.playbackRate=1;v.play();raf(loop);msg('Rendering in real time. Keep this page open.');
+  });
+}
+
+/* ---------- wiring ---------- */
+$('#pick').onclick=$('#chg').onclick=()=>$('#file').click();
+$('#file').onchange=e=>{load(e.target.files[0]);e.target.value=''};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(b)setMode(b.dataset.m)};
+$('#multseg').onclick=e=>{
+  const b=e.target.closest('button');if(!b)return;S.multi=b.dataset.s==='multi';
+  document.querySelectorAll('#multseg button').forEach(x=>x.classList.toggle('on',x===b));
+  if(!S.multi){let k=false;S.faces.forEach(f=>{if(f.on&&k)f.on=false;if(f.on)k=true})}
+  renderFaces();paint();
+};
+const cmp=$('#cmp');
+cmp.onpointerdown=()=>{S.orig=true;paint()};
+cmp.onpointerup=cmp.onpointerleave=()=>{if(S.orig){S.orig=false;paint()}};
+$('#soft').oninput=$('#col').oninput=$('#turn').oninput=$('#cov').oninput=()=>S.V&&!S.V.paused?0:paint();
+$('#play').onclick=()=>{const v=S.V;if(v.paused){v.muted=false;v.play();raf(loop)}else v.pause()};
+$('#scrub').oninput=e=>{S.V.currentTime=e.target.value/1000*S.V.duration};
+$('#det').onclick=detectHere;
+$('#save').onclick=save;
+setMode('photo');
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+engine().catch(e=>msg(e.message,true));
+$('#kg').onchange=$('#km').onchange=()=>paint();
+$('#pNat').onclick=()=>{$('#soft').value=35;$('#col').value=80;paint()};
+$('#pDir').onclick=()=>{$('#soft').value=8;$('#col').value=0;paint()};
+</script>
+</body>
+</html>

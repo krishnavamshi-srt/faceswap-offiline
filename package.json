@@ -1,0 +1,2 @@
+{ "name": "face-swap", "version": "1.0.0", "type": "module", "private": true,
+  "dependencies": { "@mediapipe/tasks-vision": "^0.10.14" } }
